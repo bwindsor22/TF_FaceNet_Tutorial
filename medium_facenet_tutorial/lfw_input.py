@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 def read_data(image_paths, label_list, image_size, batch_size, max_nrof_epochs, num_threads, shuffle, random_flip,
               random_brightness, random_contrast):
     """
+    Read images, set a label for each, skip directory if < 10 images.
+    
     Creates Tensorflow Queue to batch load images. Applies transformations to images as they are loaded.
     :param random_brightness: 
     :param random_flip: 
@@ -31,6 +33,11 @@ def read_data(image_paths, label_list, image_size, batch_size, max_nrof_epochs, 
     labels = ops.convert_to_tensor(label_list, dtype=tf.int32)
 
     # Makes an input queue
+    """
+     TensorFlow programs use a tensor data structure to represent all data — only tensors are passed
+     between operations in the computation graph. You can think of a TensorFlow 
+     tensor as an n-dimensional array or list.
+    """
     input_queue = tf.train.slice_input_producer((images, labels),
                                                 num_epochs=max_nrof_epochs, shuffle=shuffle, )
 
@@ -73,7 +80,8 @@ def read_image_from_disk(filename_to_label_tuple):
     """
     label = filename_to_label_tuple[1]
     file_contents = tf.read_file(filename_to_label_tuple[0])
-    example = tf.image.decode_jpeg(file_contents, channels=3)
+    logger.info('reading file {}'.format(filename_to_label_tuple[1]))
+    example = tf.image.decode_jpeg(file_contents, channels=3, try_recover_truncated=True, acceptable_fraction=0.5)
     return example, label
 
 
